@@ -5,36 +5,25 @@ node{
     }
     
     stage(" Maven Clean Package"){
-      def mavenHome =  tool name: "Maven-3.5.6", type: "maven"
-      def mavenCMD = "${mavenHome}/bin/mvn"
-      sh "${mavenCMD} clean package"
-      
+      def mvnHome =  tool name: 'maven3', type: 'maven'   
+      sh "${mvnHome}/bin/mvn clean package"
     } 
-    
-    
-    stage('Build Docker Image'){
-        sh 'docker build -t dockerhandson/java-web-app .'
+    stage('Build Docker Imager'){
+   sh 'docker build -t chandrakumar420/javawebapp .'
+   }
+  stage('Docker Image Push'){
+   withCredentials([string(credentialsId: 'chandrakumar420', variable: 'dockerPassword')]) {
+   sh "docker login -u chandrakumar420 -p ${dockerPassword}"
     }
-    
-    stage('Push Docker Image'){
-        withCredentials([string(credentialsId: 'Docker_Hub_Pwd', variable: 'Docker_Hub_Pwd')]) {
-          sh "docker login -u dockerhandson -p ${Docker_Hub_Pwd}"
-        }
-        sh 'docker push dockerhandson/java-web-app'
-     }
-     
-      stage('Run Docker Image In Dev Server'){
-        
-        def dockerRun = ' docker run  -d -p 8080:8080 --name java-web-app dockerhandson/java-web-app'
-         
-         sshagent(['DOCKER_SERVER']) {
-          sh 'ssh -o StrictHostKeyChecking=no ubuntu@172.31.20.72 docker stop java-web-app || true'
-          sh 'ssh  ubuntu@172.31.20.72 docker rm java-web-app || true'
-          sh 'ssh  ubuntu@172.31.20.72 docker rmi -f  $(docker images -q) || true'
-          sh "ssh  ubuntu@172.31.20.72 ${dockerRun}"
+   sh 'docker push chandrakumar420/javawebapp'
+   }
+   stage('Run Docker Image In Dev Server'){
+   def dockerRun = ' docker run  -d -p 8080:8080 --name javawebapp chandrakumar420/javawebapp'
+         sshagent(['Jenkinsubuntu']) {
+          sh 'ssh -o StrictHostKeyChecking=no ubuntu@172.31.32.118 docker stop javawebapp || true'
+          sh 'ssh  ubuntu@172.31.32.118 docker rm javawebapp  || true'
+          sh 'ssh  ubuntu@172.31.32.118 docker rmi -f  $(docker images -q) || true'
+          sh "ssh  ubuntu@172.31.32.118 ${dockerRun}"
        }
-       
     }
-     
-     
 }
