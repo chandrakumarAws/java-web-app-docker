@@ -20,8 +20,7 @@ node{
    stage('Run Docker Image In Dev Server'){
    def dockerRun = ' docker run  -d -p 8080:8080 --name javawebapp chandrakumar420/javawebapp'
          sshagent(['Jenkinsubuntu']) {
-          sh 'ssh -o StrictHostKeyChecking=no ubuntu@172.31.32.118 docker stop javawebapp || true'
-          sh 'ssh  ubuntu@172.31.32.118 docker rm javawebapp  || true'
+          sh 'ssh -o StrictHostKeyChecking=no ubuntu@172.31.32.118 docker rm -f javawebapp || true'
           sh 'ssh  ubuntu@172.31.32.118 docker rmi -f  $(docker images -q) || true'
           sh "ssh  ubuntu@172.31.32.118 ${dockerRun}"
        }
